@@ -4,6 +4,10 @@ ck.react-server module for [conskit](https://github.com/conskit/conskit)
 
 ## Usage
 
+### Requires
+
+- Java 8 or above
+
 FIXME
 
 ## License
