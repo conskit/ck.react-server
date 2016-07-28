@@ -6,6 +6,7 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [conskit "0.3.0-SNAPSHOT"]]
   :profiles {:dev {:source-paths ["dev"]
+                   :resource-paths ["dev-resources"]
                    :dependencies [[puppetlabs/trapperkeeper "1.4.1" :classifier "test"]
                                   [puppetlabs/kitchensink "1.3.1" :classifier "test" :scope "test"]
                                   [midje "1.8.3"]

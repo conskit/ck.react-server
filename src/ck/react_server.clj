@@ -7,7 +7,7 @@
     [conskit.macros :refer [definterceptor]])
   (:import (javax.script ScriptEngineManager Invocable)))
 
-(defn- render-fn* [path nspace method]
+(defn- render-fn* [path nspace method dev?]
   (let [js (doto (.getEngineByName (ScriptEngineManager.) "nashorn")
              (.eval "var global=global||this,self=self||this,nashorn=!0,console=global.console||{};
              ['error','log','info','warn'].forEach(function(o){o in console||(console[o]=function(){})}),
@@ -26,7 +26,7 @@
                           list
                           object-array)))]
     (fn [template-fn state-edn]
-      (template-fn (render-fn (pr-str state-edn)) (get-in state-edn [1 :meta]) (pr-str state-edn)))))
+      (template-fn (if dev? "<div id=\"dev\"></div>" (render-fn (pr-str state-edn))) (get-in state-edn [1 :meta]) (pr-str state-edn)))))
 
 (definterceptor
   ^:react-server-page
@@ -60,8 +60,8 @@
    [:ActionRegistry register-bindings! register-interceptors!]]
   (start [this context]
         (log/info "Starting React Server Rendering Service")
-        (let [{:keys [pool-size js-path namespace method]} (get-in-config [:react-server])]
-          (assoc context :pool (ref (repeatedly pool-size #(render-fn* js-path namespace method))))))
+        (let [{:keys [pool-size js-path namespace method dev-mode]} (get-in-config [:react-server])]
+          (assoc context :pool (ref (repeatedly pool-size #(render-fn* js-path namespace method (= dev-mode "yes")))))))
   (stop [this context]
         (log/info "Stopping React Server Rendering Service")
         (dissoc context :pool))

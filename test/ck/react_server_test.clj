@@ -50,3 +50,11 @@
   (let [serv (app/get-service app :ResultService)
         res (get-result serv)]
     (fact (re-find #"<div id=\"foo\"" (:body (ckp/invoke res {}))) => "<div id=\"foo\"")))
+
+(with-app-with-cli-data
+  app
+  [ck/registry rs/renderer test-service]
+  {:config "./dev-resources/test-config2.conf"}
+  (let [serv (app/get-service app :ResultService)
+        res (get-result serv)]
+    (fact (re-find #"<div id=\"dev\"" (:body (ckp/invoke res {}))) => "<div id=\"dev\"")))
