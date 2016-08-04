@@ -7,12 +7,11 @@
     [conskit.macros :refer [definterceptor]])
   (:import (javax.script ScriptEngineManager Invocable)))
 
-(defn- render-fn* [path nspace method dev?]
+(defn- render-fn* [setup path nspace method]
   (let [js (doto (.getEngineByName (ScriptEngineManager.) "nashorn")
-             (.eval "var global=global||this,self=self||this,nashorn=!0,console=global.console||{};
-             ['error','log','info','warn'].forEach(function(o){o in console||(console[o]=function(){})}),
-             ['setTimeout','setInterval','setImmediate','clearTimeout','clearInterval','clearImmediate']
-             .forEach(function(o){o in global||(global[o]=function(){})});")
+             (.eval (-> setup
+                        (io/resource)
+                        (io/reader)))
              (.eval (-> path
                         (io/resource)
                         (io/reader))))
@@ -26,7 +25,7 @@
                           list
                           object-array)))]
     (fn [template-fn state-edn]
-      (template-fn (if dev? "<div id=\"dev\"></div>" (render-fn (pr-str state-edn))) (get-in state-edn [1 :meta]) (pr-str state-edn)))))
+      (template-fn (render-fn (pr-str state-edn)) (get-in state-edn [1 :meta]) (pr-str state-edn)))))
 
 (definterceptor
   ^:react-server-page
@@ -34,21 +33,22 @@
   "Server side rendering of reactjs/reagent views"
   [f config #{get-render-fn get-meta} req]
   (if config
-    (let [[status data] (first (f req))
+    (let [[status data options] (f req)
           render (get-render-fn)
           ok? (= status ::ok)
           {:keys [template-fn]} config
           {:keys [id]} (get-meta)]
-      {:status (condp = status
-                 ::ok 200
-                 ::internal-error 500
-                 ::unauthorized 401
-                 ::redirect 302
-                 ::not-found 404)
-       :headers {"Content-Type" "text/html"}
-       :body (render template-fn [(if ok? id status)
-                                  {:meta (dissoc config :template-fn)
-                                   :data data}])})
+      (merge {:status  (condp = status
+                         ::ok 200
+                         ::internal-error 500
+                         ::unauthorized 401
+                         ::redirect 302
+                         ::not-found 404)
+              :headers {"Content-Type" "text/html"}
+              :body    (render template-fn [(if ok? id status)
+                                            {:meta (dissoc config :template-fn)
+                                             :data data}])}
+             options))
     (f req)))
 
 (defprotocol CKReactServer
@@ -60,8 +60,11 @@
    [:ActionRegistry register-bindings! register-interceptors!]]
   (start [this context]
         (log/info "Starting React Server Rendering Service")
-        (let [{:keys [pool-size js-path namespace method dev-mode]} (get-in-config [:react-server])]
-          (assoc context :pool (ref (repeatedly pool-size #(render-fn* js-path namespace method (= dev-mode "yes")))))))
+        (let [{:keys [pool-size js-path namespace method dev-mode setup-script]} (get-in-config [:react-server])]
+          (assoc context :pool (ref (repeatedly pool-size (if (= dev-mode "yes")
+                                                            (fn []
+                                                              #(apply %1 ["<div id=\"dev\"></div>" (get-in %2 [1 :meta]) (pr-str %2)]))
+                                                            #(render-fn* (or setup-script "js/setup.js")  js-path namespace method)))))))
   (stop [this context]
         (log/info "Stopping React Server Rendering Service")
         (dissoc context :pool))

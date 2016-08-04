@@ -21,7 +21,7 @@
                                          rendered-html)}}
     my-action
     [req]
-    {:ck.react-server/ok {}}))
+    [:ck.react-server/ok {}]))
 
 (defprotocol ResultService
   (get-result [this]))
