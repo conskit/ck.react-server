@@ -36,18 +36,21 @@
     (let [[status data options] (f req)
           render (get-render-fn)
           ok? (= status ::ok)
+          state-only? (= "true" (get (:headers req) "x-state-only"))
           {:keys [template-fn]} config
-          {:keys [id]} (get-meta)]
+          {:keys [id]} (get-meta)
+          state [(if ok? id status)
+                 {:meta (dissoc config :template-fn)
+                  :data data}]]
       (merge {:status  (condp = status
                          ::ok 200
                          ::internal-error 500
                          ::unauthorized 401
                          ::redirect 302
-                         ::not-found 404)
+                         ::not-found 404
+                         status)
               :headers {"Content-Type" "text/html"}
-              :body    (render template-fn [(if ok? id status)
-                                            {:meta (dissoc config :template-fn)
-                                             :data data}])}
+              :body    (if state-only? (pr-str state) (render template-fn state))}
              options))
     (f req)))
 
