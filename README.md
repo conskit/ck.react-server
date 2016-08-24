@@ -101,9 +101,21 @@ Key: `:CKReactServer`
 
 |Method | Description|
 |----|---|
-|`get-render-fn` | Returns a rendering function |
+|`get-render-fn` | Returns a rendering function from the pool|
+
+The render function returned from the above has the following expects to be provided with:
+
+- `template-fn` - a function that returns an HTML string for the page. It should accept three parameters:
+  - `rendered-html` - This is the html that was rendered by the nashorn engine. Typically you'll want to place this within your mount point in the html string
+  - `metadata` - This is any metadata such as title, seo keywords and anything else that you know will be specific to each page
+  - `page-state` - same as the `state` param below
+- `state` - This value represents the page state that can be used in the reactJS app to render specific components. It typically looks like this: `[:myapp/awesome-page {:meta {:title "Awesome Page"} :data {:page :data}}]`. where `:meta` is the same data as the above parameter and `:data` is whatever was returned as response data 
 
 ### Interceptor
+
+The interceptor provided: `ck.react-server/react-server-page` uses the render function described above, when it wraps actions, to return a [ring response](https://github.com/ring-clojure/ring/wiki/Creating-responses) with the page rendered by nashorn. 
+
+In cases where only the page state is needed, for instance when routing and rendering on the client side, you can send an ajax request with the header `X-State-Only` set to `"true"`
 
 
 ## License
