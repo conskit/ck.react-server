@@ -2,6 +2,10 @@
 
 A nashorn-based react serverside rendering module for [conskit](https://github.com/conskit/conskit)
 
+## Installation
+
+Add the dependency in the clojars badge above in your `project.clj`.
+
 ## Requires
 - Java 8 or above (for nashorn)
 
