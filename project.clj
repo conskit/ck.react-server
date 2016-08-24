@@ -1,10 +1,10 @@
-(defproject ck.react-server "0.1.0-SNAPSHOT"
-  :description "FIXME: ck.react-server module for Conskit"
-  :url "https://website.com/example/ck.react-server"
+(defproject ck.react-server "1.0.0-rc1"
+  :description "Module that adds support for React/Reagent/Om server-side rendering to Conskit using Nashorn"
+  :url "https://github.com/conskit/ck.react-server"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0.html"}
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [conskit "0.3.0-SNAPSHOT"]]
+                 [conskit "1.0.0-rc1"]]
   :profiles {:dev {:source-paths ["dev"]
                    :resource-paths ["dev-resources"]
                    :dependencies [[puppetlabs/trapperkeeper "1.4.1" :classifier "test"]
