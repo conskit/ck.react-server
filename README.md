@@ -113,7 +113,9 @@ The render function returned from the above has the following expects to be prov
 
 ### Interceptor
 
-The interceptor provided: `ck.react-server/react-server-page` uses the render function described above, when it wraps actions, to return a [ring response](https://github.com/ring-clojure/ring/wiki/Creating-responses) with the page rendered by nashorn. 
+The interceptor provided: `ck.react-server/react-server-page` uses the render function described above, when it wraps actions, to return a [ring response](https://github.com/ring-clojure/ring/wiki/Creating-responses) with the page rendered by nashorn.
+
+The annotation for actions is `:react-server-page` and the only mandatory value is the `:template-fn` described in the previous section. all other values are treated as metadata.
 
 In cases where only the page state is needed, for instance when routing and rendering on the client side, you can send an ajax request with the header `X-State-Only` set to `"true"`
 
