@@ -1,4 +1,4 @@
-(defproject ck.react-server "1.0.0-rc1"
+(defproject ck.react-server "1.0.0"
   :description "Module that adds support for React/Reagent/Om server-side rendering to Conskit using Nashorn"
   :url "https://github.com/conskit/ck.react-server"
   :license {:name "Apache License, Version 2.0"

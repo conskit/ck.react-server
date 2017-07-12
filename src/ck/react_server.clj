@@ -74,13 +74,15 @@
   (get-render-fn
     [this]
     (let [pool (get (service-context this) :pool)
-          {:keys [js-path namespace method]} (get-in-config [:react-server])]
+          {:keys [js-path namespace method dev-mode setup-script]} (get-in-config [:react-server])]
       (fn render [template-fn state-edn]
         (let [rendr (dosync
                       (let [f (first @pool)]
                         (alter pool rest)
                         f))
-              rendr (or rendr (render-fn* js-path namespace method))
+              rendr (or rendr (if (= dev-mode "yes")
+                                #(apply %1 ["<div id=\"dev\"></div>" (get-in %2 [1 :meta]) (pr-str %2)])
+                                (render-fn* (or setup-script "js/setup.js")  js-path namespace method)))
               html (rendr template-fn state-edn)]
           (dosync (alter pool conj rendr))
           html)))))
